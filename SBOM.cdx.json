@@ -1,0 +1,41 @@
+{
+  "bomFormat": "CycloneDX",
+  "specVersion": "1.6",
+  "serialNumber": "urn:uuid:867b1a80-69e0-4ff2-94e0-b47e649e2763",
+  "version": 1,
+  "metadata": {
+    "timestamp": "2026-11-20T00:00:00Z",
+    "component": {
+      "type": "application",
+      "bom-ref": "aura-venue-studio@0.1.0",
+      "name": "aura-venue-studio",
+      "version": "0.1.0",
+      "description": "Aura Venue Studio (fictional example product by TrustSource)",
+      "licenses": [
+        {
+          "license": {
+            "id": "CC-BY-SA-4.0"
+          }
+        }
+      ],
+      "externalReferences": [
+        {
+          "type": "vcs",
+          "url": "https://github.com/trustsource/aura-venue-studio"
+        }
+      ]
+    },
+    "supplier": {
+      "name": "TrustSource"
+    }
+  },
+  "components": [],
+  "compositions": [
+    {
+      "aggregate": "complete",
+      "assemblies": [
+        "aura-venue-studio@0.1.0"
+      ]
+    }
+  ]
+}

@@ -1,0 +1,22 @@
+# Ground truth for aura-venue-studio.
+# Covers the desktop application, the front end, the installer and the sample control application.
+#
+# One entry per component that is really contained in this repository:
+#
+#   - name: mbedtls
+#     version: "x.y.z"
+#     origin: <URL the files were taken from>
+#     included_as: vendored-source | package | binary | supplier-sbom | library-reference
+#     location: <path in this repository>
+#     identifiers:
+#       purl: <package URL, if one exists>
+#       cpe: <CPE, if one exists>
+#     expected_vulnerabilities:
+#       - id: CVE-yyyy-nnnn
+#         source: <URL of the NVD entry or vendor advisory that states this version is affected>
+#     notes: <e.g. locally modified, patch backported>
+#
+# Every entry must be backed by a source. Do not estimate versions or CVE mappings.
+schema: 1
+module: aura-venue-studio
+components: []
