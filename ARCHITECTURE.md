@@ -1,6 +1,6 @@
 # Architecture: aura-venue-studio
 
-Version 0.1.0 · 2026-11-20 · Diagram: [ARCHITECTURE.drawio](ARCHITECTURE.drawio)
+Version 1.0.0 · 2026-11-20 · Diagram: [ARCHITECTURE.drawio](ARCHITECTURE.drawio)
 
 ## System overview and purpose
 
@@ -13,9 +13,10 @@ part of the system that ordinary software composition analysis handles best.
 
 | Component | Responsibility | Origin |
 |---|---|---|
-| Desktop application | project handling, communication with the controller | Aurelia Audio, .NET packages |
-| Front end | configuration and logic editor | Aurelia Audio, npm packages |
-| Installer | installs the application and third-party run-times it needs | Aurelia Audio, bundled third-party installers |
+| Desktop application (`src/VenueStudio.Desktop`) | project handling, project archives, hosts the front end in WebView2 | Aurelia Audio; .NET 10 (WPF) with five NuGet packages |
+| Front end (`src/frontend`) | configuration and logic editor | Aurelia Audio; React and the Monaco editor from npm, built with vite |
+| Installer (`installer/`) | MSI package and setup bundle, built with the WiX Toolset | Aurelia Audio; WiX 6.0.2 |
+| Third-party run-times (`installer/redist`) | .NET Desktop Runtime and WebView2 Runtime, installed by the setup bundle | Microsoft redistributables, not stored in git |
 | Sample control application (`venue-plc-app`) | logic of one installation, refers to function libraries by name and version | written by the integrator, not by the manufacturer |
 
 ## Key interfaces and data flows
@@ -39,6 +40,29 @@ Communication with the TrustSource API (uploads and imports from CI) uses the or
 Mapping to TrustSource: one project "Aura Venue Studio" with modules for the desktop application and
 the front end. The sample control application is a separate module, because it belongs to another
 party.
+
+## Scan architecture
+
+One TrustSource project "Aura Venue Studio". Module names contain no version, so that settings and
+approvals survive releases. `ts-scan` derives the module name from the package itself; there is no
+option to set it.
+
+| Module (name as derived by ts-scan) | Scanned path | How | Result of the first local scan (ts-scan 1.10.0, 2026-11-20) |
+|---|---|---|---|
+| `VenueStudio` | `src/VenueStudio.Desktop` | NuGet scan, upload in TrustSource format | 5 of 5 packages found |
+| `venue-studio-frontend` | `src/frontend` | Node scan, upload in TrustSource format | all 7 shipped packages found; the 30 development packages are left out by default |
+| `installer` | `installer` | file scan | no component found: neither the WiX packages (no lock file) nor the two run-times chained in `Bundle.wxs` |
+| `venue-plc-app` | `examples/venue-plc-app` | file scan | no component found: the five library references are not recognised |
+
+What the scans do not see has to be entered by hand; `truth.yaml` lists it. The installer and the
+sample control application are the two places where that is necessary.
+
+`ts-scan-agent` 0.6.2 proposes the same split for desktop application and front end. It also
+proposes the solution at the repository root and the two WiX projects as NuGet modules, and asks
+whether they are released separately. It does not notice the chained run-times or the sample control
+application.
+
+The file scan sends file fingerprints to the SCANOSS service to recognise known code.
 
 ## Architecture decision records
 
@@ -88,17 +112,57 @@ party.
 ### ADR-004: The installer bundles third-party run-times
 
 - **Date:** 2026-11-20 (v0.1.0)
-- **Status:** Proposed
+- **Status:** Accepted
 - **Context:** Engineering software for industrial devices often installs third-party run-times along
   with itself, for example for licensing or communication. Vulnerabilities in those run-times reach
   the manufacturer's customers through the manufacturer's installer, although they appear in no
   package manifest.
-- **Decision:** The installer of the Studio carries at least one third-party run-time that is not
-  declared in the .NET or npm manifests.
-- **Consequences:** The component is invisible to manifest-based scanning; finding it is part of the
-  exercise.
+- **Decision:** The setup bundle chains two third-party run-times that are declared in neither the
+  .NET nor the npm manifest: the .NET Desktop Runtime (Venue Studio is framework-dependent) and the
+  Microsoft Edge WebView2 Runtime. They are referenced in `Bundle.wxs` and fetched at build time;
+  the files are not stored in git, because they are proprietary redistributables.
+- **Consequences:** The run-times are invisible to manifest-based scanning; finding and tracking
+  them is part of the exercise. Their versions have to be pinned and maintained by hand.
+
+### ADR-005: Installer built with the WiX Toolset
+
+- **Date:** 2026-11-20 (v1.0.0)
+- **Status:** Accepted
+- **Context:** The Studio needs a Windows installer. The alternatives were Visual Studio installer
+  projects and the WiX Toolset.
+- **Decision:** WiX Toolset 6.0.2: an MSI package project and a bundle project. WiX is text-based,
+  builds through the normal .NET build and is widespread in industry. Its bundle is the usual place
+  where manufacturers chain third-party run-times.
+- **Consequences:** WiX arrives as a NuGet package, so a build tool appears among the dependencies.
+  It is licensed under MS-RL, and the WiX project asks commercial users of its released binaries for
+  a maintenance fee; nothing built with it is distributed from this repository. The installer can
+  only be built on Windows and has not been built.
+
+### ADR-006: Desktop application hosts a web front end
+
+- **Date:** 2026-11-20 (v1.0.0)
+- **Status:** Proposed
+- **Context:** Engineering tools often combine a native shell with a web-based editor.
+- **Decision:** A .NET desktop application (WPF) hosts a React front end in WebView2.
+- **Consequences:** One product with two package ecosystems (NuGet and npm) and an additional
+  run-time (WebView2) on the customer's PC.
+
+### ADR-007: Venue Studio 1.0.0 deliberately contains outdated dependencies
+
+- **Date:** 2026-11-20 (v1.0.0)
+- **Status:** Accepted
+- **Context:** The example is to show the handling of vulnerabilities over two releases: a statement
+  that a vulnerability does not apply (VEX), a fix in a following release and a security advisory.
+- **Decision:** Release 1.0.0 pins Newtonsoft.Json 12.0.3, SharpZipLib 1.3.1 and lodash 4.17.20,
+  each with known vulnerabilities recorded in `truth.yaml`. The code uses them so that one case is
+  really reachable (extraction of project archives with SharpZipLib) and one is not (the affected
+  lodash functions are not imported).
+- **Consequences:** The repository triggers vulnerability alerts by design. It must not be used as a
+  basis for real software.
 
 ## Open decisions
 
 - Protocol between Studio and controller.
-- Which third-party run-time the installer bundles (freely licensed stand-in).
+- Version of the WebView2 Runtime to pin; known vulnerabilities of the pinned .NET Desktop Runtime.
+- Whether development and build tools (vite, WiX) belong in the product's bill of materials.
+- How the installer and the sample control application get into TrustSource (hand-maintained entries).

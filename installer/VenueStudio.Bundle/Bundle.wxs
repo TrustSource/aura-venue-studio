@@ -1,0 +1,43 @@
+<Wix xmlns="http://wixtoolset.org/schemas/v4/wxs"
+     xmlns:bal="http://wixtoolset.org/schemas/v4/wxs/bal"
+     xmlns:util="http://wixtoolset.org/schemas/v4/wxs/util">
+
+  <Bundle Name="Venue Studio" Manufacturer="Aurelia Audio GmbH" Version="1.0.0"
+          UpgradeCode="b3c1f9d4-71a2-4e0c-8a6d-2e5d4c9f0b21">
+
+    <BootstrapperApplication>
+      <bal:WixStandardBootstrapperApplication LicenseUrl="" Theme="hyperlinkLicense" />
+    </BootstrapperApplication>
+
+    <util:RegistrySearch Id="WebView2Version" Variable="WebView2Version" Bitness="always32"
+                         Root="HKLM" Key="SOFTWARE\Microsoft\EdgeUpdate\Clients\{F3017226-FE2A-4295-8BDF-00C3A9A7E4C5}"
+                         Value="pv" />
+
+    <Chain>
+
+      <!--
+        Third-party run-times installed together with Venue Studio. They are redistributables of
+        other vendors, appear in no package manifest of this repository and are not stored in git
+        (see ../redist/README.md).
+      -->
+
+      <!-- .NET Desktop Runtime: Venue Studio is framework-dependent and needs it on the PC. -->
+      <ExePackage Id="DotNetDesktopRuntime"
+                  SourceFile="..\redist\windowsdesktop-runtime-10.0.0-win-x64.exe"
+                  InstallArguments="/install /quiet /norestart"
+                  Permanent="yes" PerMachine="yes" Vital="yes" />
+
+      <!-- Microsoft Edge WebView2 Runtime: renders the web front end inside the application. -->
+      <ExePackage Id="WebView2Runtime"
+                  SourceFile="..\redist\MicrosoftEdgeWebView2RuntimeInstallerX64.exe"
+                  InstallArguments="/silent /install"
+                  DetectCondition="WebView2Version"
+                  Permanent="yes" PerMachine="yes" Vital="yes" />
+
+      <MsiPackage SourceFile="VenueStudio.msi" />
+
+    </Chain>
+
+  </Bundle>
+
+</Wix>

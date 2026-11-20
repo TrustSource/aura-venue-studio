@@ -1,0 +1,19 @@
+{
+  "formatVersion": "1.0",
+  "name": "Hotel Lobby",
+  "createdWith": "Venue Studio 1.0.0",
+  "author": "Example Integration Ltd.",
+  "targetDevice": { "type": "Venue Controller", "minFirmware": "1.0.0" },
+  "libraries": [
+    { "name": "Aurelia.Paging", "version": "2.3.1", "vendor": "Aurelia Audio GmbH" },
+    { "name": "Aurelia.Zones", "version": "2.3.1", "vendor": "Aurelia Audio GmbH" },
+    { "name": "LogicCore.Standard", "version": "3.5.16.0", "vendor": "LogicCore" },
+    { "name": "LogicCore.Util", "version": "3.5.16.0", "vendor": "LogicCore" },
+    { "name": "OpenField.ModbusTcp", "version": "1.4.0", "vendor": "OpenField community" }
+  ],
+  "zones": [
+    { "name": "Lobby", "amplifiers": ["AMP-01", "AMP-02"] },
+    { "name": "Zone 3", "amplifiers": ["AMP-03"] }
+  ],
+  "logic": "main.st"
+}

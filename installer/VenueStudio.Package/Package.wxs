@@ -1,0 +1,55 @@
+<Wix xmlns="http://wixtoolset.org/schemas/v4/wxs">
+
+  <Package Name="Venue Studio" Manufacturer="Aurelia Audio GmbH" Version="1.0.0"
+           UpgradeCode="6f0a1c52-3d0e-4b7a-9d55-8c2f6f1b7a10" Scope="perMachine">
+
+    <MajorUpgrade DowngradeErrorMessage="A newer version of Venue Studio is already installed." />
+    <MediaTemplate EmbedCab="yes" />
+
+    <StandardDirectory Id="ProgramFiles6432Folder">
+      <Directory Id="INSTALLFOLDER" Name="Venue Studio">
+        <Directory Id="FrontendFolder" Name="frontend" />
+      </Directory>
+    </StandardDirectory>
+
+    <Feature Id="Main" Title="Venue Studio">
+      <ComponentGroupRef Id="Application" />
+      <ComponentGroupRef Id="Frontend" />
+    </Feature>
+
+    <!-- Desktop application and the NuGet assemblies it ships with -->
+    <ComponentGroup Id="Application" Directory="INSTALLFOLDER">
+      <Component>
+        <File Source="$(var.VenueStudio.Desktop.TargetDir)VenueStudio.exe" KeyPath="yes" />
+      </Component>
+      <Component>
+        <File Source="$(var.VenueStudio.Desktop.TargetDir)VenueStudio.dll" />
+      </Component>
+      <Component>
+        <File Source="$(var.VenueStudio.Desktop.TargetDir)Newtonsoft.Json.dll" />
+      </Component>
+      <Component>
+        <File Source="$(var.VenueStudio.Desktop.TargetDir)ICSharpCode.SharpZipLib.dll" />
+      </Component>
+      <Component>
+        <File Source="$(var.VenueStudio.Desktop.TargetDir)Serilog.dll" />
+      </Component>
+      <Component>
+        <File Source="$(var.VenueStudio.Desktop.TargetDir)CommunityToolkit.Mvvm.dll" />
+      </Component>
+      <Component>
+        <File Source="$(var.VenueStudio.Desktop.TargetDir)Microsoft.Web.WebView2.Core.dll" />
+      </Component>
+      <Component>
+        <File Source="$(var.VenueStudio.Desktop.TargetDir)Microsoft.Web.WebView2.Wpf.dll" />
+      </Component>
+    </ComponentGroup>
+
+    <!-- Built web front end (output of "npm run build" in src/frontend) -->
+    <ComponentGroup Id="Frontend" Directory="FrontendFolder">
+      <Files Include="..\..\src\frontend\dist\**" />
+    </ComponentGroup>
+
+  </Package>
+
+</Wix>

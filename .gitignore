@@ -3,3 +3,8 @@
 .idea/
 .vscode/
 .env
+bin/
+obj/
+node_modules/
+dist/
+installer/redist/*.exe
