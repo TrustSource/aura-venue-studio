@@ -1,4 +1,4 @@
-# aura-venue-studio
+# Aura Venue Studio
 
 Engineering software for the Aura Venue Controller.
 
